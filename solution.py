@@ -17,6 +17,8 @@ def assign_value(values, box, value):
 
 def naked_twins(values):
     """Eliminate values using the naked twins strategy.
+
+       expanded to the naked Ns strategy (eg. triplets, quadruplet... septuplet)
     Args:
         values(dict): a dictionary of the form {'box_name': '123456789', ...}
 
@@ -27,17 +29,18 @@ def naked_twins(values):
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
 
-    for unit in unitlist:
-        undecided_boxes = list(filter(lambda x: len(values[x]) > 1, unit))
+    for unit in units:
+        undetermined_boxes = list(filter(lambda x: len(values[x]) > 1, unit))
 
-        if not undecided_boxes:
+        if not undetermined_boxes:
             return values
 
-        max_value_len_box = max(undecided_boxes, key=lambda x: len(values[x]))
+        max_value_len_box = max(undetermined_boxes, key=lambda x: len(values[x]))
         max_value_len = len(values[max_value_len_box])
 
-        undecided_num = len(undecided_boxes)
+        undecided_num = len(undetermined_boxes)
 
+        # it's impossible there are 8 possible values in a box and 9 possible values aren't informative.
         if max_value_len > 7:
             continue
 
@@ -45,11 +48,11 @@ def naked_twins(values):
             if undecided_num <= n:
                 continue
 
-            boxes_n_len = list(filter(lambda x: len(values[x]) == n, undecided_boxes))
+            n_len_boxes = list(filter(lambda x: len(values[x]) == n, undetermined_boxes))
 
-            first_value = values[boxes_n_len[0]]
-            if len(boxes_n_len) == n and all(values[box] == first_value for box in boxes_n_len):
-                boxes_larger = list(filter(lambda x: len(values[x]) > n, undecided_boxes))
+            first_value = values[n_len_boxes[0]]
+            if len(n_len_boxes) == n and all(values[box] == first_value for box in n_len_boxes):
+                boxes_larger = list(filter(lambda x: len(values[x]) > n, undetermined_boxes))
 
                 for ch in first_value:
                     for box_larger in boxes_larger:
@@ -64,13 +67,13 @@ def cross(A, B):
 
     return [s + t for s in A for t in B]
 
-# add existing util variables
+# add util variables
 boxes = cross(rows, cols)
-
 row_units = [cross(r, cols) for r in rows]
 column_units = [cross(rows, c) for c in cols]
 square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
-unitlist = row_units + column_units + square_units
+diagonal_units = [row + col for row, col in zip(rows, cols)]
+unitlist = row_units + column_units + square_units + diagonal_units
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
 
@@ -110,12 +113,11 @@ def display(values):
     return
 
 def eliminate(values):
-    #add existing function
     solved_values = [box for box in values.keys() if len(values[box]) == 1]
     for box in solved_values:
         digit = values[box]
         for peer in peers[box]:
-            values[peer] = values[peer].replace(digit,'')
+            values = assign_value(values, peer, values[peer].replace(digit,''))
     return values
 
 def only_choice(values):
@@ -124,7 +126,8 @@ def only_choice(values):
         for digit in '123456789':
             dplaces = [box for box in unit if digit in values[box]]
             if len(dplaces) == 1:
-                values[dplaces[0]] = digit
+                values = assign_value(values, dplaces[0], digit)
+
     return values
 
 def reduce_puzzle(values):
@@ -134,11 +137,14 @@ def reduce_puzzle(values):
         # Check how many boxes have a determined value
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
 
-        # Your code here: Use the Eliminate Strategy
-        eliminate(values)
+        # Use the Eliminate Strategy
+        values = eliminate(values)
 
-        # Your code here: Use the Only Choice Strategy
-        only_choice(values)
+        # Use the naked twins strategy
+        values = naked_twins(values)
+
+        # Use the Only Choice Strategy
+        values = only_choice(values)
 
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
@@ -150,16 +156,11 @@ def reduce_puzzle(values):
     return values
 
 def search(values):
-    #add existing function
-
-    "Using depth-first search and propagation, create a search tree and solve the sudoku."
-    # First, reduce the puzzle using the previous function
-
-    # Choose one of the unfilled squares with the fewest possibilities
-
-    # Now use recursion to solve each one of the resulting sudokus, and if one returns a value (not False), return that answer!
-
-    # If you're stuck, see the solution.py tab!
+    '''
+    :param values:
+    :return:
+    Using depth-first search and propagation, create a search tree and solve the sudoku.
+    '''
 
     reduced = reduce_puzzle(values)
 
@@ -190,6 +191,8 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
+
+    search()
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
