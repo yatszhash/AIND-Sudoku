@@ -3,6 +3,7 @@ assignments = []
 # add existing function
 rows = 'ABCDEFGHI'
 cols = '123456789'
+UNIT_SIZE = 9
 
 def assign_value(values, box, value):
     """
@@ -25,6 +26,37 @@ def naked_twins(values):
 
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
+
+    for unit in unitlist:
+        undecided_boxes = list(filter(lambda x: len(values[x]) > 1, unit))
+
+        if not undecided_boxes:
+            return values
+
+        max_value_len_box = max(undecided_boxes, key=lambda x: len(values[x]))
+        max_value_len = len(values[max_value_len_box])
+
+        undecided_num = len(undecided_boxes)
+
+        if max_value_len > 7:
+            continue
+
+        for n in range(max_value_len - 1, 1, -1):
+            if undecided_num <= n:
+                continue
+
+            boxes_n_len = list(filter(lambda x: len(values[x]) == n, undecided_boxes))
+
+            first_value = values[boxes_n_len[0]]
+            if len(boxes_n_len) == n and all(values[box] == first_value for box in boxes_n_len):
+                boxes_larger = list(filter(lambda x: len(values[x]) > n, undecided_boxes))
+
+                for ch in first_value:
+                    for box_larger in boxes_larger:
+                        if ch in values[box_larger]:
+                            values = assign_value(values, box_larger, values[box_larger].replace(ch, ''))
+
+    return values
 
 def cross(A, B):
     "Cross product of elements in A and elements in B."
@@ -131,8 +163,8 @@ def search(values):
 
     reduced = reduce_puzzle(values)
 
-    if reduced is False:
-        return False
+    if not reduced:
+        return reduced
 
     if all(len(reduced[box]) == 1 for box in reduced):
         return values
