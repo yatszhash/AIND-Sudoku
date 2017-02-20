@@ -1,9 +1,26 @@
 assignments = []
 
 # add existing function
-rows = 'ABCDEFGHI'
-cols = '123456789'
-UNIT_SIZE = 9
+ROWS = 'ABCDEFGHI'
+COLS = '123456789'
+
+
+def cross(A, B):
+    "Cross product of elements in A and elements in B."
+    #add existing util functions
+
+    return [s + t for s in A for t in B]
+
+# module variables
+boxes = cross(ROWS, COLS)
+row_units = [cross(r, COLS) for r in ROWS]
+column_units = [cross(ROWS, c) for c in COLS]
+square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
+diagonal_units = [[row + col for row, col in zip(ROWS, COLS)], [row + col for row, col in zip(ROWS, reversed(COLS))]]
+unitlist = row_units + column_units + square_units + diagonal_units
+units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
+
 
 def assign_value(values, box, value):
     """
@@ -29,11 +46,11 @@ def naked_twins(values):
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
 
-    for unit in units:
+    for unit in unitlist:
         undetermined_boxes = list(filter(lambda x: len(values[x]) > 1, unit))
 
         if not undetermined_boxes:
-            return values
+            continue
 
         max_value_len_box = max(undetermined_boxes, key=lambda x: len(values[x]))
         max_value_len = len(values[max_value_len_box])
@@ -50,6 +67,9 @@ def naked_twins(values):
 
             n_len_boxes = list(filter(lambda x: len(values[x]) == n, undetermined_boxes))
 
+            if not n_len_boxes:
+                continue
+
             first_value = values[n_len_boxes[0]]
             if len(n_len_boxes) == n and all(values[box] == first_value for box in n_len_boxes):
                 boxes_larger = list(filter(lambda x: len(values[x]) > n, undetermined_boxes))
@@ -60,22 +80,6 @@ def naked_twins(values):
                             values = assign_value(values, box_larger, values[box_larger].replace(ch, ''))
 
     return values
-
-def cross(A, B):
-    "Cross product of elements in A and elements in B."
-    #add existing util functions
-
-    return [s + t for s in A for t in B]
-
-# add util variables
-boxes = cross(rows, cols)
-row_units = [cross(r, cols) for r in rows]
-column_units = [cross(rows, c) for c in cols]
-square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
-diagonal_units = [row + col for row, col in zip(rows, cols)]
-unitlist = row_units + column_units + square_units + diagonal_units
-units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
-peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
 
 def grid_values(grid):
     """
@@ -106,9 +110,9 @@ def display(values):
     """
     width = 1 + max(len(values[s]) for s in boxes)
     line = '+'.join(['-' * (width * 3)] * 3)
-    for r in rows:
+    for r in ROWS:
         print(''.join(values[r + c].center(width) + ('|' if c in '36' else '')
-                      for c in cols))
+                      for c in COLS))
         if r in 'CF': print(line)
     return
 
@@ -157,9 +161,9 @@ def reduce_puzzle(values):
 
 def search(values):
     '''
-    :param values:
-    :return:
     Using depth-first search and propagation, create a search tree and solve the sudoku.
+    :param values: The sudoku in dictionary form
+    :return: values: searched sudoku in dictionary form. If
     '''
 
     reduced = reduce_puzzle(values)
@@ -191,8 +195,12 @@ def solve(grid):
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
     """
+    values = grid_values(grid)
+    values = search(values)
 
-    search()
+    if values:
+        return values
+    return False
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
