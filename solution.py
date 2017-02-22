@@ -135,7 +135,11 @@ def only_choice(values):
     return values
 
 def reduce_puzzle(values):
-    # add existing function
+    """
+    reduce possible values with the eliminate strategy, use the only choice strategy and the naked twins strategy
+    :param values:
+    :return values:
+    """
     stalled = False
     while not stalled:
         # Check how many boxes have a determined value

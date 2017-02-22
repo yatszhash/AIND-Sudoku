@@ -3,12 +3,31 @@
 
 # Question 1 (Naked Twins)
 Q: How do we use constraint propagation to solve the naked twins problem?  
-A: *Student should provide answer here*
-
+A:  
+   At a given phase, if there are the boxes with the completely same possible values in a given unit, 
+   and the number of these boxes equals to the number of their possible values,
+   each value of the possible values must be in separate one of these box when a given sudoku
+   is completely solved. 
+   Therefore, each of the possible values can be removed from the other boxes in the same unit at the phase. 
+   
+   These reduction sometimes can enable us to reduce possible value in another units sharing same boxes in the same way.
+   
 # Question 2 (Diagonal Sudoku)
 Q: How do we use constraint propagation to solve the diagonal sudoku problem?  
-A: *Student should provide answer here*
-
+A: 
+   In the diagonal sudoku, there are more units by two than the normal sudoku.
+   
+   If the box are in a diagonal line, 
+   in addition to in the same row unit, column unit and square unit, 
+   there are peers in the diagonal line. 
+   
+   In the eliminate strategy, the increased peers enable us to more certainly reduce possible values in a given box 
+   because it's more possible a box has solved box in the same peers.
+   
+   In the one choice strategy and in the naked twins, 
+   the increased units increase our chance to reduce the possible values.
+   
+   
 ### Install
 
 This project requires **Python 3**.
