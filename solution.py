@@ -1,3 +1,5 @@
+import logging
+
 assignments = []
 
 # add existing function
@@ -160,6 +162,7 @@ def reduce_puzzle(values):
         stalled = solved_values_before == solved_values_after
         # Sanity check, return False if there is a box with zero available values:
         if len([box for box in values.keys() if len(values[box]) == 0]):
+            logging.error("not passed sanity check. Something strange in implementation")
             return False
     return values
 
@@ -217,4 +220,4 @@ if __name__ == '__main__':
     except SystemExit:
         pass
     except:
-        print('We could not visualize your board due to a pygame issue. Not a problem! It is not a requirement.')
+        logging.error('We could not visualize your board due to a pygame issue. Not a problem! It is not a requirement.')
